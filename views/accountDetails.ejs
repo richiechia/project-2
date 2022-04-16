@@ -1,0 +1,31 @@
+<%- include('header2', {title: `Welcome back!`}) -%>
+
+<h1>Welcome <%=account.name%>,</h1>
+
+<h3>Account Details</h3>
+<!-- <p>
+  : <br />
+  Account Balance : $<%=account.balance%>
+</p>
+<p></p> -->
+
+<div class="container">
+  <div class="row">
+    <div class="col-12 col-md-6 col-lg-2 mt-3 mb-3">
+      <div class="card box">
+        <h3 class="card-title mt-1 mb-3">Account 1</h3>
+        <div class="row">
+          <p class="card-text col-5 text-right">Account ID:</p>
+          <p class="card-text col-7"><%=account.bankaccountid%></p>
+        </div>
+        <div class="row">
+          <p class="card-text col-6">Account balance:</p>
+          <p class="card-text col-6">$<%=account.balance%></p>
+        </div>
+        <a class="btn btn-primary mb-3" href="/transfer/<%=account.id%>" role="button">Make a Transfer</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('footer') -%>

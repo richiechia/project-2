@@ -1,0 +1,42 @@
+<%- include('header2', {title: `Transfer `}) -%>
+
+<div class="container">
+  <form action="/transfer/transactionhistory" class="transferContent" method="POST">
+    <div class="row">
+      <div class="col-md-12 mb-3">
+        <h2>Payer Details</h2>
+      </div>
+    </div>
+    <div class="form-group row">
+      <label for="staticName" class="col-sm-2 col-form-label">Name</label>
+      <div class="col-sm-4">
+        <input type="text" readonly class="form-control-plaintext" id="staticEmail" value="<%= account.name %>" />
+      </div>
+    </div>
+    <div class="form-group row">
+      <label for="payerbankaccount" class="col-sm-2 col-form-label">Bank Account</label>
+      <div class="col-sm-4">
+        <input type="text" readonly class="form-control-plaintext" id="payerbankaccount" value="<%= account.bankaccountid %>" name="payerBankAccountId" />
+      </div>
+    </div>
+    <div class="form-group row">
+      <label for="amount" class="col-sm-2 col-form-label">Amount</label>
+      <div class="col-sm-4">
+        <input type="text" class="form-control" id="Amount" placeholder="Amount ($$)" name="amount" />
+      </div>
+    </div>
+
+    <div class="row mt-3 mb-3">
+      <h2>Payee Details</h2>
+    </div>
+    <div class="form-group row">
+      <label for="amount" class="col-sm-2 col-form-label">Bank Account</label>
+      <div class="col-sm-4">
+        <input type="text" class="form-control" id="payeeBankAccountId" placeholder="" name="payeeBankAccountId" />
+      </div>
+    </div>
+    <button class="btn btn-class-reverse">Transfer</button>
+  </form>
+</div>
+
+<%- include('footer') -%>

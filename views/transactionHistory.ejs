@@ -1,0 +1,23 @@
+<%- include('header2', {title: `Transaction History!`}) -%>
+
+<div class="container">
+  <div class="row transferContent">
+    <div class="row text-centre">
+      <div class="col-md-12 mb-3">
+        <p>Transaction Receipt</p>
+      </div>
+    </div>
+    <% const keys = Object.keys(transactionHistoryDict) %> <% keys.forEach(element=> { %>
+
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <p><%=transactionHistoryDict[element].label%> :</p>
+      </div>
+      <div class="col-md-6 mb-3">
+        <p><%=transactionHistoryDict[element].value%></p>
+      </div>
+    </div>
+    <% console.log(transactionHistoryDict[element]) %> <% console.log(element) }) %>
+  </div>
+</div>
+<%- include('footer') -%>
