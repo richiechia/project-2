@@ -2,16 +2,27 @@
 
 <h1>Welcome <%=account.name%>,</h1>
 
-<h3>Account Details</h3>
 <!-- <p>
   : <br />
   Account Balance : $<%=account.balance%>
 </p>
 <p></p> -->
+<div class="container">
+  <div class="row">
+    <h3>Account Details</h3>
+  </div>
+  <div class="row">
+    <div class="col-md-2 mb-3">
+      <form novalidate action="/loggedIn" method="POST">
+        <a class="btn btn-primary mb-3" role="button" id="createaccount"> Create another account</a>
+      </form>
+    </div>
+  </div>
+</div>
 
 <div class="container">
   <div class="row">
-    <div class="col-12 col-md-6 col-lg-2 mt-3 mb-3">
+    <div class="col-8 col-md-6 col-lg-4 mt-3 mb-3">
       <div class="card box">
         <h3 class="card-title mt-1 mb-3">Account 1</h3>
         <div class="row">

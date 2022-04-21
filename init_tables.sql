@@ -52,6 +52,14 @@ CREATE TABLE if not EXISTS transaction_history (
   transaction_hash varchar
 );
 
+CREATE TABLE if not EXISTS users_favourite(
+  id SERIAL PRIMARY KEY,
+  userId integer,
+  payeeName varchar,
+  payeeAccountId varchar,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- CREATE TABLE if not EXISTS dummy (
 --   id SERIAL PRIMARY KEY,
 --   name text

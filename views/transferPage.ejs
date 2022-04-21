@@ -35,6 +35,11 @@
         <input type="text" class="form-control" id="payeeBankAccountId" placeholder="" name="payeeBankAccountId" />
       </div>
     </div>
+    <div class="error-message">
+      <% if (typeof message !== 'undefined') { %>
+      <p><%=message%></p>
+      <% } %>
+    </div>
     <button class="btn btn-class-reverse">Transfer</button>
   </form>
 </div>

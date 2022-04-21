@@ -42,15 +42,27 @@ const entryList = {
     label: 'Phone',
     type: 'text',
   },
-  password: {
-    label: 'Password',
-    type: 'password',
-  },
   email: {
     label: 'Email',
     type: 'text',
   },
+  password: {
+    label: 'Password',
+    type: 'password',
+  },
+  password2: {
+    label: 'Confirm Password',
+    type: 'password',
+  },
 };
+
+// Used to add favourite payee
+const formInput = {
+  payeeName: { label: 'Payee Name', type: 'text' },
+  payeeBankAccountId: { label: 'Account No', type: 'text' },
+};
+
+let globalAccount;
 
 const homePageRequest = (request, response) => {
   console.log('Welcome to the home page!');
@@ -76,12 +88,21 @@ const registrationRequest = (request, response) => {
   //   const allResult = result.rows;
   //   console.log(allResult)
   // })
-  console.log('This is the login page!');
-  console.log('Form successfully submitted! Here is the request!');
+  const { message } = response.locals;
+
+  if (message) {
+    response.render('signUp', { entryList, message });
+    console.log(message);
+    return;
+  }
+
   console.log(request.body);
   const {
     name, phone, email, password,
   } = request.body;
+
+  console.log('This is the login page!');
+  console.log('Form successfully submitted! Here is the request!');
 
   const now = moment();
   const formatTime = now.format('YYYY-MM-DD, HH:mm:ss');
@@ -137,43 +158,6 @@ const registrationRequest = (request, response) => {
       console.log('authentication table update successful');
     })
     .catch((error) => console.log(error.stack));
-
-  // // Pool Query into users_bank_accounts
-  // pool
-  //   .query(`SELECT id from users WHERE phone = '${phone}'`)
-  //   .then((result) => {
-  //     // console.log(result.rows[0])
-  //     const userid = result.rows[0].id;
-  //     const bankAccountId = idGenerator.idGenerator();
-  //     const dataListCompiledUser = [userid, bankAccountId];
-  //     return dataListCompiledUser
-  //   })
-  //   .then((list) => {
-  //     pool.query('INSERT INTO users_bank_accounts (userId, bankaccountid) VALUES ($1,$2) RETURNING *', list)
-  //   })
-  //   .then((result) => {
-  //     // console.log(result.rows[0]);
-  //     console.log('users_bank_accounts update successful')
-  //   })
-  //   .catch((error) => console.log(error.stack))
-
-  // Pool Query to insert data into authentication table
-  // pool
-  //   .query(`SELECT id from users WHERE phone = '${phone}'`)
-  //   .then((result) => {
-  //   const userid = result.rows[0].id;
-
-  //   dataListAuthenticate.push(userid)
-  //   return dataListAuthenticate
-  //   })
-  //   .then((list) => {
-  //   pool.query('INSERT INTO authenticate (phone,password,userId) VALUES ($1,$2,$3) RETURNING *', list)
-  //   })
-  //   .then((result) => {
-  //     // console.log(result.rows[0]);
-  //     console.log('authentication table update successful')
-  //   })
-  //   .catch((error)=> console.log(error.stack))
 
   response.render('loginPage', { entryList });
 };
@@ -248,17 +232,56 @@ const loggedInRequest = (request, response) => {
     });
 };
 
+const homeRedirectRequest = (request, response) => {
+  const requestCookie = request.cookies.userId;
+
+  response.redirect(`/home/${requestCookie}`);
+};
+
+const homeRequest = (request, response) => {
+  const { userId } = request.cookies;
+  let account;
+  pool
+    .query(`SELECT users.id, users.name, users.phone, users.email, users_bank_accounts.userid, users_bank_accounts.bankaccountid, bank_accounts.bankaccountid, bank_accounts.balance FROM users INNER JOIN users_bank_accounts ON users_bank_accounts.userid = users.id INNER JOIN bank_accounts on users_bank_accounts.bankaccountid = bank_accounts.bankaccountid WHERE users.id = '${userId}'`)
+    .then((result) => {
+      console.log('************** LOGIN ACCOUNT DETAILS ************');
+      console.log(result.rows);
+      console.log('***************************************************');
+      account = result.rows[0];
+      response.render('accountDetails', { account });
+    })
+    .catch((error) => {
+      console.log(error.stack);
+    });
+};
+
+const obtainFavouriteList = (userid) => {
+  let favouriteAccounts;
+  pool
+    .query('SELECT * from users_favourite where userid=$1', [userid])
+    .then((results) => {
+      if (results.rows.length > 0) {
+        favouriteAccounts = results.rows;
+      }
+    })
+    .catch((error) => {
+      console.log(error.stack);
+    });
+  return favouriteAccounts;
+};
+
 const transferPageRequest = (request, response) => {
   const { index } = request.params;
 
   // console.log(index)
   let account;
+
   pool
     .query(`SELECT users.id, users.name, users.phone, users.email, users_bank_accounts.userid, users_bank_accounts.bankaccountid, bank_accounts.bankaccountid, bank_accounts.balance FROM users INNER JOIN users_bank_accounts ON users_bank_accounts.userid = users.id INNER JOIN bank_accounts on users_bank_accounts.bankaccountid = bank_accounts.bankaccountid WHERE users.id = ${index}`)
     .then((results) => {
       account = results.rows[0];
       console.log(account);
-
+      globalAccount = account;
       response.render('transferPage', { account });
     })
     .catch((error) => {
@@ -266,16 +289,31 @@ const transferPageRequest = (request, response) => {
     });
 };
 
+// ASK LIAM How do i send a POST Request and send it to a dedicated link /transfer/transactionhistory/:transactionHash.
+// Do people use redirect for that?
 const transferPagePostRequest = (request, response) => {
-  console.log(request.body);
   const { payerBankAccountId, amount, payeeBankAccountId } = request.body;
 
-  // How to add a catch statement here?
+  const { message } = response.locals;
+
+  // ASK LIAM if there's a more efficient way to do this backend check
+  const account = globalAccount;
+  if (message) {
+    response.render('transferPage', { account, message });
+    return;
+  }
+  console.log('******************************************************************');
+  console.log(request.body);
+  console.log('******************************************************************');
+
+  // ASK LIAM How to add a catch statement here?
   // Update the account balance
   const results = Promise.all([
     pool.query(`UPDATE bank_accounts SET balance=balance+${amount} where bankaccountid='${payeeBankAccountId}' `),
     pool.query(`UPDATE bank_accounts SET balance=balance-${amount} where bankaccountid='${payerBankAccountId}' `),
-  ]);
+  ]).catch((error) => {
+    console.log(error.stack);
+  });
 
   const transactionHistory = request.body;
 
@@ -298,7 +336,64 @@ const transferPagePostRequest = (request, response) => {
   // Create a transaction history record
   pool.query('INSERT into transaction_history (payeraccountid, payeeaccountid, amount, transaction_history, transaction_hash) VALUES ($1,$3,$2,$4,$5) RETURNING *', list_value);
 
-  response.render('transactionHistory', { transactionHistoryDict });
+  // response.render('transactionHistory', { transactionHistoryDict });
+  response.redirect(`/transfer/transactionhistory/${list_value[4]}`);
+};
+
+const transactionHistoryRequest = (request, response) => {
+  const { transactionHash } = request.params;
+  let lastElement;
+  pool
+    .query('SELECT * FROM transaction_history where transaction_hash=$1', [transactionHash])
+    .then((result) => {
+      if (result.rows.length !== 0) {
+        lastElement = result.rows.slice(-1);
+        const {
+          payeraccountid, payeeaccountid, amount, transaction_hash,
+        } = lastElement[0];
+
+        const transactionHistoryDict = {
+          payerBankAccountId: { value: payeraccountid, label: 'Payer Bank Account ID' },
+          amount: { value: amount, label: 'Amount' },
+          payeeBankAccountId: { value: payeeaccountid, label: 'Payee Bank Account ID' },
+          transactionHistoryReference: { value: transaction_hash, label: 'Transaction Reference ID' },
+        };
+        response.render('transactionHistory', { transactionHistoryDict });
+      }
+    })
+    .catch((error) => {
+      console.log(error.stack);
+    });
+};
+
+const addFavPayeeRequest = (request, response) => {
+  response.render('addFavourite', { formInput });
+};
+
+const addedPayeeRequest = (request, response) => {
+  const { payeeName, accountNo } = request.body;
+
+  const { message } = response.locals;
+
+  if (message) {
+    response.render('addFavourite', { formInput, message });
+    return;
+  }
+
+  const userid = request.cookies.userId;
+
+  const listValues = [userid, payeeName, accountNo];
+
+  pool
+    .query('INSERT INTO users_favourite (userid, payeename, payeeaccountid) VALUES ($1,$2,$3) RETURNING*', listValues)
+    .then((results) => {
+      console.log(results.rows);
+    })
+    .catch((error) => {
+      console.log(error.stack);
+    });
+
+  response.redirect('/home');
 };
 
 const logoutRequest = (request, response) => {
@@ -313,11 +408,16 @@ app.get('/', homePageRequest);
 app.get('/signUp', signUpRequest);
 // Login Request
 app.get('/login', loginRequest);
-app.post('/login', registrationRequest);
+app.post('/login', helper.checkUsername, registrationRequest);
 
 app.post('/loggedIn', loggedInRequest);
+app.get('/home', homeRedirectRequest);
+app.get('/home/:index', helper.authMiddleware, homeRequest);
 app.get('/transfer/:index', helper.authMiddleware, transferPageRequest);
 app.post('/transfer/transactionhistory', transferPagePostRequest);
+app.get('/transfer/transactionhistory/:transactionHash', transactionHistoryRequest);
+app.get('/loggedIn/addFavPayee', addFavPayeeRequest);
+app.post('/addedPayee', helper.checkAccountNo, addedPayeeRequest);
 app.get('/logout', logoutRequest);
 
 app.listen(3004);

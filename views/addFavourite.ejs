@@ -1,32 +1,32 @@
-<%- include('header', {title: `Sign Up`}) -%>
+<%- include('header2', {title: `Add Payee`}) -%>
 
-<div id="error"></div>
-<div class="container">
-  <div class="row content">
-    <div class="col-md-12">
-      <h3 class="signin-text mb-5 text-center">Sign Up</h3>
-      <form class="needs-validation" id="form" novalidate action="/login" method="POST">
+<div class="container content">
+  <div class="row">
+    <h3 class="mb-5">Add Favourite Payee</h3>
+  </div>
+  <div class="row">
+    <div class="col-12">
+      <form class="needs-validation" id="form-favourite-payee" novalidate action="/addedPayee" method="POST">
         <div class="row">
-          <% for (const [key, value] of Object.entries(entryList)) {%>
-          <div class="form-group col-md-12 mb-3">
-            <label for="<%=key%>" class="form-label"><%=value.label%></label>
-            <input type="<%=value.type%>" class="form-control" id="<%=key%>" name="<%=key%>" required />
-            <div class="invalid-feedback">Please fill up the field!</div>
+          <% for (const [key, value] of Object.entries(formInput)) { %>
+          <div class="form-group row mb-3">
+            <label for="<%=key%>" class="form-label col-md-2 mb-3"><%=value.label%></label>
+            <div class="col-md-4">
+              <input type="<%=value.type%>" class="form-control" id="<%=key%>" name="<%=key%>" required />
+            </div>
+            <% } %>
           </div>
-          <% } %>
         </div>
         <div class="error-message">
           <% if (typeof message !== 'undefined') { %>
           <p><%=message%></p>
           <% } %>
         </div>
-        <input type="submit" value="Submit" />
-        <!-- <button class="btn btn-class">Register</button> -->
+        <button class="btn btn-class col-md-2">Submit</button>
       </form>
     </div>
   </div>
 </div>
-
 <!-- // Example starter JavaScript for disabling form submissions if there are invalid fields -->
 <script>
   (function () {
@@ -52,4 +52,3 @@
     });
   })();
 </script>
-<%- include('footer') -%>
