@@ -1,5 +1,4 @@
-<%- include('header2', {title: `Transfer `}) -%>
-
+<%- include('header2', {title: `Transfer `}) -%> <% console.log(favouriteList) %>
 <div class="container">
   <form action="/transfer/transactionhistory" class="transferContent" method="POST">
     <div class="row">
@@ -32,7 +31,12 @@
     <div class="form-group row">
       <label for="amount" class="col-sm-2 col-form-label">Bank Account</label>
       <div class="col-sm-4">
-        <input type="text" class="form-control" id="payeeBankAccountId" placeholder="" name="payeeBankAccountId" />
+        <input list="favouriteAccounts" class="form-control" id="payeeBankAccountId" placeholder="" name="payeeBankAccountId" />
+
+        <datalist id="favouriteAccounts">
+          <% favouriteList.forEach((dataset) => { %>
+          <option value="<%=dataset.payeeaccountid%>"><% }) %></option>
+        </datalist>
       </div>
     </div>
     <div class="error-message">

@@ -223,7 +223,7 @@ const loggedInRequest = (request, response) => {
           console.log('************** LOGIN ACCOUNT DETAILS ************');
           console.log(result.rows);
           console.log('***************************************************');
-          account = result.rows[0];
+          account = result.rows;
           response.render('accountDetails', { account });
         });
     })
@@ -247,7 +247,7 @@ const homeRequest = (request, response) => {
       console.log('************** LOGIN ACCOUNT DETAILS ************');
       console.log(result.rows);
       console.log('***************************************************');
-      account = result.rows[0];
+      account = result.rows;
       response.render('accountDetails', { account });
     })
     .catch((error) => {
@@ -282,7 +282,11 @@ const transferPageRequest = (request, response) => {
       account = results.rows[0];
       console.log(account);
       globalAccount = account;
-      response.render('transferPage', { account });
+      pool.query(`SELECT payeename, payeeaccountid FROM users_favourite where userid = ${index}`).then((result) => {
+        const favouriteList = result.rows;
+
+        response.render('transferPage', { account, favouriteList });
+      });
     })
     .catch((error) => {
       console.log(error.stack);
@@ -371,7 +375,7 @@ const addFavPayeeRequest = (request, response) => {
 };
 
 const addedPayeeRequest = (request, response) => {
-  const { payeeName, accountNo } = request.body;
+  const { payeeName, payeeBankAccountId } = request.body;
 
   const { message } = response.locals;
 
@@ -382,7 +386,7 @@ const addedPayeeRequest = (request, response) => {
 
   const userid = request.cookies.userId;
 
-  const listValues = [userid, payeeName, accountNo];
+  const listValues = [userid, payeeName, payeeBankAccountId];
 
   pool
     .query('INSERT INTO users_favourite (userid, payeename, payeeaccountid) VALUES ($1,$2,$3) RETURNING*', listValues)
@@ -391,6 +395,39 @@ const addedPayeeRequest = (request, response) => {
     })
     .catch((error) => {
       console.log(error.stack);
+    });
+
+  response.redirect('/home');
+};
+
+const secondaryAccountInput = {
+  otherJoint: { label: 'Joint Account Owner Name', type: 'text' },
+  handphone: { label: 'Handphone', type: 'text' },
+};
+
+const secondaryAccountRequest = (request, response) => {
+  response.render('secondaryAccount', { secondaryAccountInput });
+};
+
+const jointAccountSubmission = (request, response) => {
+  console.log(request.body);
+  const { otherJoint, handphone } = request.body;
+
+  const currentUser = request.cookies.userId;
+  let bankAccountId;
+
+  pool
+    .query('SELECT id from users where phone =$1', [handphone])
+    .then((result) => {
+      const userid = result.rows[0].id;
+      bankAccountId = idGenerator.idGenerator();
+      const dataListCompiledUser = [userid, bankAccountId];
+      return dataListCompiledUser;
+    })
+    .then((list) => {
+      pool.query('INSERT INTO users_bank_accounts (userid, bankaccountid) VALUES ($1,$2)', list);
+      pool.query('INSERT INTO users_bank_accounts (userid, bankaccountid) VALUES ($1,$2)', [currentUser, list[1]]);
+      pool.query('INSERT INTO bank_accounts (bankaccountid, balance) VALUES ($1,$2)', [list[1], 0]);
     });
 
   response.redirect('/home');
@@ -413,6 +450,8 @@ app.post('/login', helper.checkUsername, registrationRequest);
 app.post('/loggedIn', loggedInRequest);
 app.get('/home', homeRedirectRequest);
 app.get('/home/:index', helper.authMiddleware, homeRequest);
+app.get('/createSecondary', secondaryAccountRequest);
+app.post('/jointAccountSubmission', jointAccountSubmission);
 app.get('/transfer/:index', helper.authMiddleware, transferPageRequest);
 app.post('/transfer/transactionhistory', transferPagePostRequest);
 app.get('/transfer/transactionhistory/:transactionHash', transactionHistoryRequest);

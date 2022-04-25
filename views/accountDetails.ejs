@@ -2,6 +2,7 @@
 
 <h1>Welcome <%=account.name%>,</h1>
 
+<% console.log(account) %>
 <!-- <p>
   : <br />
   Account Balance : $<%=account.balance%>
@@ -14,7 +15,7 @@
   <div class="row">
     <div class="col-md-2 mb-3">
       <form novalidate action="/loggedIn" method="POST">
-        <a class="btn btn-primary mb-3" role="button" id="createaccount"> Create another account</a>
+        <a class="btn btn-primary mb-3" href="/createSecondary" role="button" id="createaccount"> Create another account</a>
       </form>
     </div>
   </div>
@@ -22,20 +23,23 @@
 
 <div class="container">
   <div class="row">
+    <% account.forEach((acc, index) => { %>
+
     <div class="col-8 col-md-6 col-lg-4 mt-3 mb-3">
       <div class="card box">
-        <h3 class="card-title mt-1 mb-3">Account 1</h3>
+        <h3 class="card-title mt-1 mb-3">Account <%=index+1%></h3>
         <div class="row">
           <p class="card-text col-5 text-right">Account ID:</p>
-          <p class="card-text col-7"><%=account.bankaccountid%></p>
+          <p class="card-text col-7"><%=acc.bankaccountid%></p>
         </div>
         <div class="row">
           <p class="card-text col-6">Account balance:</p>
-          <p class="card-text col-6">$<%=account.balance%></p>
+          <p class="card-text col-6">$<%=acc.balance%></p>
         </div>
-        <a class="btn btn-primary mb-3" href="/transfer/<%=account.id%>" role="button">Make a Transfer</a>
+        <a class="btn btn-primary mb-3" href="/transfer/<%=acc.id%>" role="button">Make a Transfer</a>
       </div>
     </div>
+    <% }) %>
   </div>
 </div>
 

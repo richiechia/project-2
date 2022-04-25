@@ -1,0 +1,29 @@
+<%- include('header2', {title: `Joint Account Creation!`}) -%>
+
+<div class="container content">
+  <div class="row">
+    <h3 class="mb-5">Create Joint Account</h3>
+  </div>
+  <div class="row">
+    <div class="col-12">
+      <form class="needs-validation" id="form-joint-account" novalidate action="/jointAccountSubmission" method="POST">
+        <div class="row">
+          <% for (const [key, value] of Object.entries(secondaryAccountInput)) { %>
+          <div class="form-group row mb-3">
+            <label for="<%=key%>" class="form-label col-md-2 mb-3"><%=value.label%></label>
+            <div class="col-md-4">
+              <input type="<%=value.type%>" class="form-control" id="<%=key%>" name="<%=key%>" required />
+            </div>
+            <% } %>
+          </div>
+        </div>
+        <div class="error-message">
+          <% if (typeof message !== 'undefined') { %>
+          <p><%=message%></p>
+          <% } %>
+        </div>
+        <button class="btn btn-class col-md-2">Submit</button>
+      </form>
+    </div>
+  </div>
+</div>
